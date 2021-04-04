@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.809.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DryveD1API", "DryveD1API\DryveD1API.csproj", "{83F10BB5-FF26-4E15-A92C-5F161589089E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DryveD1API.Tests", "DryveD1API.Tests\DryveD1API.Tests.csproj", "{9C3E1E9D-24CB-42D3-8F81-B23D52D97191}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{83F10BB5-FF26-4E15-A92C-5F161589089E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83F10BB5-FF26-4E15-A92C-5F161589089E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83F10BB5-FF26-4E15-A92C-5F161589089E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9C3E1E9D-24CB-42D3-8F81-B23D52D97191}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9C3E1E9D-24CB-42D3-8F81-B23D52D97191}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9C3E1E9D-24CB-42D3-8F81-B23D52D97191}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9C3E1E9D-24CB-42D3-8F81-B23D52D97191}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
