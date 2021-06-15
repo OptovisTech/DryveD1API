@@ -1,17 +1,16 @@
 ﻿using System.Collections;
 using System.Net.Sockets;
+using DryveD1API.Common;
 
 namespace DryveD1API.Modules
 {
     /// <summary>
-    /// 6041h
-    /// RO
+    /// 6041h<br />
+    /// Feedback of status information of the dryve D1<br />
     /// </summary>
     public class StatusWord
     {
         private static byte ByteNumber { get => 2; }
-        private static byte ObjectIndex1 { get => 96; }
-        private static byte ObjectIndex2 { get => 65; }
 
         /// <summary>
         /// Ready to Switch On
@@ -111,7 +110,7 @@ namespace DryveD1API.Modules
         public void Read(Socket s)
         {
             var telegram = new Telegram();
-            telegram.Set(0, ObjectIndex1, ObjectIndex2, ByteNumber);
+            telegram.Set(0, AddressConst.StatusWord, ByteNumber);
             var result = telegram.SendAndReceive(s);
             Set(result.Byte19, result.Byte20);
         }

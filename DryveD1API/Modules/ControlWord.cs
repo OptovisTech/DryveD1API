@@ -1,17 +1,18 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Net.Sockets;
+using System.Threading.Tasks;
+using DryveD1API.Common;
 
 namespace DryveD1API.Modules
 {
     /// <summary>
-    /// 6040h
-    /// RWW
+    /// 6040h<br />
+    /// Object for controlling the dryve D1
     /// </summary>
     public class ControlWord
     {
         private static byte ByteNumber { get => 2; }
-        private static byte ObjectIndex1 { get => 96; }
-        private static byte ObjectIndex2 { get => 64; }
 
         /// <summary>
         /// Switch On
@@ -111,7 +112,7 @@ namespace DryveD1API.Modules
         public void Read(Socket s)
         {
             var telegram = new Telegram();
-            telegram.Set(0, ObjectIndex1, ObjectIndex2, ByteNumber);
+            telegram.Set(0, AddressConst.ControlWord, ByteNumber);
             var result = telegram.SendAndReceive(s);
             Set(result.Byte19, result.Byte20);
         }
@@ -132,9 +133,22 @@ namespace DryveD1API.Modules
             bitArray20.CopyTo(byte20, 0);
 
             var telegram = new Telegram();
-            telegram.Set(1, ObjectIndex1, ObjectIndex2, ByteNumber, 0, byte19[0], byte20[0]);
+            telegram.Length = 21;
+            telegram.Set(1, AddressConst.ControlWord, ByteNumber, byte19[0], byte20[0]);
             var result = telegram.SendAndReceive(s);
-            //Set(result.Byte19, result.Byte20);
+        }
+
+        public void Start(Socket s)
+        {
+            Task.Delay(TimeSpan.FromMilliseconds(250)).ConfigureAwait(true);
+
+            // Byte 19:     // 31
+            Bit00 = true;   // 1
+            Bit01 = true;   // 2
+            Bit02 = true;   // 4
+            Bit03 = true;   // 8
+            Bit04 = true;    // 16
+            Write(s);
         }
     }
 }

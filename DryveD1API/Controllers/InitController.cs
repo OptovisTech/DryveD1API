@@ -1,5 +1,7 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
 using System.Threading;
+using DryveD1API.Common;
 using DryveD1API.Modules;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,17 +25,14 @@ namespace DryveD1API.Controllers
         [HttpGet("{hostIp}/{port}")]
         public bool Init(string hostIp, int port)
         {
-            using (Socket s = ModbusSocket.Connect(hostIp, port))
-            {
-                ShutDown(s);
-                SwitchOn(s);
-                EnableOperation(s);
-                ModbusSocket.Close(s);
-            }
+            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            ShutDown(s);
+            SwitchOn(s);
+            EnableOperation(s);
             return true;
         }
 
-        private void ShutDown(Socket s)
+        public void ShutDown(Socket s)
         {
             ControlWord controlWord = new ControlWord();
             // Byte 19: 6
@@ -86,6 +85,5 @@ namespace DryveD1API.Controllers
                 Thread.Sleep(100);
             }
         }
-
     }
 }

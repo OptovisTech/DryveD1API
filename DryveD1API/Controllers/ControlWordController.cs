@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using DryveD1API.Common;
 using DryveD1API.Modules;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,13 +21,10 @@ namespace DryveD1API.Controllers
         [HttpGet("{hostIp}/{port}")]
         public ControlWord GetControlWord(string hostIp, int port)
         {
-            using (Socket s = ModbusSocket.Connect(hostIp, port))
-            {
-                ControlWord controlWord = new ControlWord();
-                controlWord.Read(s);
-                ModbusSocket.Close(s);
-                return controlWord;
-            }
+            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            ControlWord controlWord = new ControlWord();
+            controlWord.Read(s);
+            return controlWord;
         }
 
         /// <summary>
@@ -39,11 +37,8 @@ namespace DryveD1API.Controllers
         [HttpPut("{hostIp}/{port}")]
         public void SetControlWord(string hostIp, int port, [FromBody] ControlWord controlWord)
         {
-            using (Socket s = ModbusSocket.Connect(hostIp, port))
-            {
-                controlWord.Write(s);
-                ModbusSocket.Close(s);
-            }
+            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            controlWord.Write(s);
         }
     }
 }

@@ -1,7 +1,6 @@
-﻿using System;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 
-namespace DryveD1API
+namespace DryveD1API.Common
 {
     /// <summary>
     /// Length has to be set if value is not 19
@@ -145,13 +144,19 @@ namespace DryveD1API
         /// <param name="byte21">Data field 3</param>
         /// <param name="byte22">Data field 4</param>
         /// <returns>The final telegram.</returns>
-        public void Set(byte byte09, byte byte12, byte byte13, byte byte18,
-            byte byte14 = 0, byte byte19 = 0, byte byte20 = 0, byte byte21 = 0, byte byte22 = 0)
+        public void Set(byte byte09, byte[] address, byte byte18, byte byte19 = 0, byte byte20 = 0, byte byte21 = 0, byte byte22 = 0)
         {
             Byte09 = byte09;
-            Byte12 = byte12;
-            Byte13 = byte13;
-            Byte14 = byte14;
+            Byte12 = address[0];
+            Byte13 = address[1];
+            if (address.Length == 3)
+            {
+                Byte14 = address[2];
+            }
+            else
+            {
+                Byte14 = 0;
+            }
             Byte18 = byte18;
             Byte19 = byte19;
             Byte20 = byte20;
@@ -227,7 +232,7 @@ namespace DryveD1API
             // Send request to the server.
             _ = s.Send(data, data.Length, 0);
             // Receive data from the server.
-            byte[] bytesReceived = new byte[24];
+            byte[] bytesReceived = new byte[23];
             _ = s.Receive(bytesReceived, bytesReceived.Length, 0);
             Telegram response = new Telegram();
             response.FillBytes(bytesReceived);

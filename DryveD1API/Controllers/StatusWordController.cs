@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using DryveD1API.Common;
 using DryveD1API.Modules;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,13 +21,10 @@ namespace DryveD1API.Controllers
         [HttpGet("{hostIp}/{port}")]
         public StatusWord GetStatusWord(string hostIp, int port)
         {
-            using (Socket s = ModbusSocket.Connect(hostIp, port))
-            {
-                StatusWord statusWord = new StatusWord();
-                statusWord.Read(s);
-                ModbusSocket.Close(s);
-                return statusWord;
-            }
+            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            StatusWord statusWord = new StatusWord();
+            statusWord.Read(s);
+            return statusWord;
         }
     }
 }

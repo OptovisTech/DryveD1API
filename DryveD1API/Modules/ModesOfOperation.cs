@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using DryveD1API.Common;
 
 namespace DryveD1API.Modules
 {
@@ -9,8 +10,6 @@ namespace DryveD1API.Modules
     public class ModesOfOperation
     {
         private static byte ByteNumber { get => 1; }
-        private static byte ObjectIndex1 { get => 96; }
-        private static byte ObjectIndex2 { get => 96; }
 
         /// <summary>
         /// 
@@ -53,21 +52,21 @@ namespace DryveD1API.Modules
         public void Read(Socket s)
         {
             var telegram = new Telegram();
-            telegram.Set(0, ObjectIndex1, ObjectIndex2, ByteNumber);
+            telegram.Set(0, AddressConst.ModesOfOperation, ByteNumber);
             var result = telegram.SendAndReceive(s);
             currentMode = (ModesEnum)result.Byte19;
         }
 
         /// <summary>
-        /// 6061h RO<br />
-        /// Modes of Operation Display
+        /// 6061h<br />
+        /// Object for feedback of current operating mode.
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
         public ModesEnum ReadDisplay(Socket s)
         {
             var telegram = new Telegram();
-            telegram.Set(0, ObjectIndex1, 97, ByteNumber);
+            telegram.Set(0, AddressConst.ModesOfOperationDisplay, ByteNumber);
             var result = telegram.SendAndReceive(s);
             return (ModesEnum)result.Byte19;
         }
@@ -80,7 +79,8 @@ namespace DryveD1API.Modules
         public void Write(Socket s, ModesEnum mode)
         {
             var telegram = new Telegram();
-            telegram.Set(1, ObjectIndex1, ObjectIndex2, ByteNumber, 0, (byte)mode);
+            telegram.Length = 20;
+            telegram.Set(1, AddressConst.ModesOfOperation, ByteNumber, (byte)mode);
             var result = telegram.SendAndReceive(s);
         }
     }
