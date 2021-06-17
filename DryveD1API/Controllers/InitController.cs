@@ -32,7 +32,7 @@ namespace DryveD1API.Controllers
             return true;
         }
 
-        public void ShutDown(Socket s)
+        private void ShutDown(Socket s)
         {
             ControlWord controlWord = new ControlWord();
             // Byte 19: 6
