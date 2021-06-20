@@ -80,26 +80,28 @@ namespace DryveD1API.Common
             {
                 if (!controlWord.Bit06)
                 {
-
-                }
-                controlWord.Bit06 = true;
-                controlWordEP.SetControlWord(ip, port, controlWord);
-                // Check relative positioning is set (Bit 6)
-                controlWord = controlWordEP.GetControlWord(ip, port);
-                if (controlWord.Bit06 != RelativePosition)
-                {
-                    return false;
+                    controlWord.Bit06 = true;
+                    controlWordEP.SetControlWord(ip, port, controlWord);
+                    // Check relative positioning is set (Bit 6)
+                    controlWord = controlWordEP.GetControlWord(ip, port);
+                    if (controlWord.Bit06 != RelativePosition)
+                    {
+                        return false;
+                    }
                 }
             }
-            else if (controlWord.Bit06)
+            else
             {
-                controlWord.Bit06 = false;
-                controlWordEP.SetControlWord(ip, port, controlWord);
-                // Check relative positioning is set (Bit 6)
-                controlWord = controlWordEP.GetControlWord(ip, port);
-                if (controlWord.Bit06 != RelativePosition)
+                if (controlWord.Bit06)
                 {
-                    return false;
+                    controlWord.Bit06 = false;
+                    controlWordEP.SetControlWord(ip, port, controlWord);
+                    // Check relative positioning is set (Bit 6)
+                    controlWord = controlWordEP.GetControlWord(ip, port);
+                    if (controlWord.Bit06 != RelativePosition)
+                    {
+                        return false;
+                    }
                 }
             }
 
