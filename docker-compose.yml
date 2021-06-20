@@ -1,0 +1,13 @@
+version: '3.4'
+
+
+
+services:
+  dryved1api:
+    image: ${DOCKER_REGISTRY-}dryved1api
+    build:
+      context: .
+      dockerfile: DryveD1API/Dockerfile
+    ports:
+        - "127.0.0.1:5020:5020"
+        - "127.0.0.1:502:502"
