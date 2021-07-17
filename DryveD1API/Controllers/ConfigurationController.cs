@@ -13,6 +13,79 @@ namespace DryveD1API.Controllers
     [Route("[controller]")]
     public class ConfigurationController : ControllerBase
     {
+
+        /// <summary>
+        /// 6091h sub1<br />
+        /// Motor shaft revolutions.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <returns></returns>
+        [HttpGet("GearRatioMotorShaftRevolutions/{hostIp}/{port}")]
+        public uint GetGearRatioMotorShaftRevolutions(string hostIp, int port)
+        {
+            var connection = ModbusSocket.GetConnection(hostIp, port);
+            var telegram = new Telegram();
+            telegram.Set(0, AddressConst.GearRatioMotorShaftRevolutions, 4);
+            var response = telegram.SendAndReceive(connection.socket);
+            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0);
+            return result;
+        }
+
+        /// <summary>
+        /// 6091h sub1<br />
+        /// Motor shaft revolutions.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="feedRate"></param>
+        [HttpPut("GearRatioMotorShaftRevolutions/{hostIp}/{port}")]
+        public void SetGearRatioMotorShaftRevolutions(string hostIp, int port, [FromBody] uint motorShaftRevolutions)
+        {
+            var connection = ModbusSocket.GetConnection(hostIp, port);
+            byte[] data = BitConverter.GetBytes(motorShaftRevolutions);
+            var telegram = new Telegram();
+            telegram.Length = 23;
+            telegram.Set(1, AddressConst.GearRatioMotorShaftRevolutions, 4, data[0], data[1], data[2], data[3]);
+            var response = telegram.SendAndReceive(connection.socket);
+        }
+
+        /// <summary>
+        /// 6091h sub2<br />
+        /// Driving shaft revolutions.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <returns></returns>
+        [HttpGet("GearRatioMotorShaftRevolutions/{hostIp}/{port}")]
+        public uint GetGearRatioDrivingShaftRevolutions(string hostIp, int port)
+        {
+            var connection = ModbusSocket.GetConnection(hostIp, port);
+            var telegram = new Telegram();
+            telegram.Set(0, AddressConst.GearRatioDrivingShaftRevolutions, 4);
+            var response = telegram.SendAndReceive(connection.socket);
+            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0);
+            return result;
+        }
+
+        /// <summary>
+        /// 6091h sub2<br />
+        /// Driving shaft revolutions.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="feedRate"></param>
+        [HttpPut("GearRatioMotorShaftRevolutions/{hostIp}/{port}")]
+        public void SetGearRatioDrivingShaftRevolutions(string hostIp, int port, [FromBody] uint drivingShaftRevolutions)
+        {
+            var connection = ModbusSocket.GetConnection(hostIp, port);
+            byte[] data = BitConverter.GetBytes(drivingShaftRevolutions);
+            var telegram = new Telegram();
+            telegram.Length = 23;
+            telegram.Set(1, AddressConst.GearRatioDrivingShaftRevolutions, 4, data[0], data[1], data[2], data[3]);
+            var response = telegram.SendAndReceive(connection.socket);
+        }
+
         /// <summary>
         /// 6092h sub1<br />
         /// Indication of the FeedRate.
