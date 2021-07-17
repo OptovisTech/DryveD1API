@@ -134,6 +134,12 @@
         public static readonly byte[] HomingAcceleration = { 96, 154 };
 
         /// <summary>
+        /// 60A8h<br />
+        /// Movement type and multiplication factor.
+        /// </summary>
+        public static readonly byte[] SIUnitPosition = { 96, 168 };
+
+        /// <summary>
         /// 
         /// </summary>
         public static readonly byte[] InterpolationTimePeriod = { 96, 194 };

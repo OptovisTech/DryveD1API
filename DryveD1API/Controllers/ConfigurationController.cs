@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Net.Sockets;
 using DryveD1API.Common;
+using DryveD1API.Modules;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace DryveD1API.Controllers
 {
@@ -12,7 +11,7 @@ namespace DryveD1API.Controllers
     /// </summary>
     [ApiController]
     [Route("[controller]")]
-    public class FeedConstantController : ControllerBase
+    public class ConfigurationController : ControllerBase
     {
         /// <summary>
         /// 6092h sub1<br />
@@ -84,6 +83,46 @@ namespace DryveD1API.Controllers
             telegram.Length = 23;
             telegram.Set(1, AddressConst.ShaftRevolution, 4, data[0], data[1], data[2], data[3]);
             var response = telegram.SendAndReceive(s);
+        }
+
+        /// <summary>
+        /// 60A8h<br />
+        /// Movement type and multiplication factor.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <returns></returns>
+        [HttpGet("SIUnitPosition/{hostIp}/{port}")]
+        public string[] GetSIUnitPosition(string hostIp, int port)
+        {
+            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            var siUnitPosition = new SIUnitPosition();
+            siUnitPosition.Read(s);
+            return new string[2] { siUnitPosition.MovementType.ToString(), siUnitPosition.GetMultiplicationFactor() };
+        }
+
+        /// <summary>
+        /// Movement type and multiplication factor.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="movementTypeString"></param>
+        /// <param name="multiplicationFactorString"></param>
+        [HttpPut("SIUnitPosition/{hostIp}/{port}/{MovementType}/{MultiplicationFactor}")]
+        public void SetSIUnitPosition(string hostIp, int port, string movementTypeString, string multiplicationFactorString)
+        {
+            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            var siUnitPosition = new SIUnitPosition();
+            if (Enum.TryParse(movementTypeString, out MovementTypeEnum movementType))
+            {
+                siUnitPosition.MovementType = movementType;
+                siUnitPosition.SetMultiplicationFactor(multiplicationFactorString);
+            }
+            else
+            {
+                throw new Exception("Wrong MovementTypeValue");
+            }
+            siUnitPosition.Write(s);
         }
     }
 }

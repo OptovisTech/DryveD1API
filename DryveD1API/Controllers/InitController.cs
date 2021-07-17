@@ -26,10 +26,35 @@ namespace DryveD1API.Controllers
         public bool Init(string hostIp, int port)
         {
             Socket s = ModbusSocket.GetConnection(hostIp, port);
+            ModesOfOperation modesOfOperation = new ModesOfOperation();
+            modesOfOperation.Write(s, (ModesOfOperation.ModesEnum)1);
+
+            while (modesOfOperation.ReadDisplay(s) != ModesOfOperation.ModesEnum.ProfilePosition)
+            {
+                Thread.Sleep(100);
+            }
+
+            Reset(s);
             ShutDown(s);
             SwitchOn(s);
             EnableOperation(s);
             return true;
+        }
+
+        private void Reset(Socket s)
+        {
+            ControlWord controlWord = new ControlWord();
+            // Byte 19: 6
+            controlWord.Bit01 = true; // 2
+            controlWord.Write(s);
+
+            StatusWord statusWord = new StatusWord();
+            while (!(statusWord.Bit00 && statusWord.Bit05 // 33
+                && statusWord.Bit09)) // 2
+            {
+                statusWord.Read(s);
+                Thread.Sleep(100);
+            }
         }
 
         private void ShutDown(Socket s)
