@@ -1,8 +1,8 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using DryveD1API.Modules;
 
 namespace DryveD1API.Common
 {
@@ -11,48 +11,58 @@ namespace DryveD1API.Common
     /// </summary>
     public static class ModbusSocket
     {
-        private static Dictionary<IPAddress, Socket> socketList;
+        private static Dictionary<IPAddress, ControllerConnection> connectionList;
 
 
-        public static Socket GetConnection(string server, int port)
+        public static ControllerConnection GetConnection(string server, int port)
         {
 
-            if (socketList is null)
+            if (connectionList is null)
             {
-                socketList = new Dictionary<IPAddress, Socket>();
+                connectionList = new Dictionary<IPAddress, ControllerConnection>();
             }
             IPAddress ipAddress = IPAddress.Parse(server);
             Stopwatch watch = new Stopwatch();
             watch.Start();
-            if (socketList.ContainsKey(ipAddress))
+            if (connectionList.ContainsKey(ipAddress))
             {
-                var socket = socketList[ipAddress];
-                if (socket.Connected)
+                var connection = connectionList[ipAddress];
+                if (connection.socket.Connected)
                 {
                     watch.Stop();
                     Debug.WriteLine($"Connected: {watch.ElapsedMilliseconds}");
-                    return socket;
+                    return connection;
                 }
                 else
                 {
-                    socketList.Remove(ipAddress);
-                    socket = Connect(ipAddress, port);
-                    socketList.Add(ipAddress, socket);
+                    connectionList.Remove(ipAddress);
+                    connection.socket = Connect(ipAddress, port);
+                    connection.MultiplicationFactor = GetMultiplicationFactor(connection.socket);
+                    connectionList.Add(ipAddress, connection);
                     watch.Stop();
                     Debug.WriteLine($"Not connected: {watch.ElapsedMilliseconds}");
-                    return socket;
+                    return connection;
                 }
             }
             else
             {
                 watch = new Stopwatch();
                 watch.Start();
-                var socket = Connect(ipAddress, port);
+                var connection = new ControllerConnection();
+                connection.socket = Connect(ipAddress, port);
+                connection.MultiplicationFactor = GetMultiplicationFactor(connection.socket);
+                connectionList.Add(ipAddress, connection);
                 watch.Stop();
                 Debug.WriteLine($"Not existing: {watch.ElapsedMilliseconds}");
-                socketList.Add(ipAddress, socket);
-                return socket;
+                return connection;
             }
+        }
+
+        private static double GetMultiplicationFactor(Socket s)
+        {
+            var siUnitPosition = new SIUnitPosition();
+            siUnitPosition.Read(s);
+            return siUnitPosition.GetMultiplicationFactorValue();
         }
 
         /// <summary>
@@ -77,11 +87,11 @@ namespace DryveD1API.Common
 
         public static void CLoseAll()
         {
-            foreach (var socket in socketList)
+            foreach (var controllerConnection in connectionList)
             {
-                if (socket.Value.Connected)
+                if (controllerConnection.Value.socket.Connected)
                 {
-                    Close(socket.Value);
+                    Close(controllerConnection.Value.socket);
                 }
             }
         }
@@ -91,5 +101,12 @@ namespace DryveD1API.Common
             s.Shutdown(SocketShutdown.Both);
             s.Close();
         }
+    }
+
+    public class ControllerConnection
+    {
+        public Socket socket { get; set; }
+
+        public double MultiplicationFactor { get; set; }
     }
 }

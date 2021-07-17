@@ -25,19 +25,19 @@ namespace DryveD1API.Controllers
         [HttpGet("{hostIp}/{port}")]
         public bool Init(string hostIp, int port)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
             ModesOfOperation modesOfOperation = new ModesOfOperation();
-            modesOfOperation.Write(s, (ModesOfOperation.ModesEnum)1);
+            modesOfOperation.Write(connection.socket, (ModesOfOperation.ModesEnum)1);
 
-            while (modesOfOperation.ReadDisplay(s) != ModesOfOperation.ModesEnum.ProfilePosition)
+            while (modesOfOperation.ReadDisplay(connection.socket) != ModesOfOperation.ModesEnum.ProfilePosition)
             {
                 Thread.Sleep(100);
             }
 
-            Reset(s);
-            ShutDown(s);
-            SwitchOn(s);
-            EnableOperation(s);
+            Reset(connection.socket);
+            ShutDown(connection.socket);
+            SwitchOn(connection.socket);
+            EnableOperation(connection.socket);
             return true;
         }
 

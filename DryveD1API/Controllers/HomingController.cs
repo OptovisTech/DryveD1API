@@ -26,10 +26,10 @@ namespace DryveD1API.Controllers
         [HttpGet("{hostIp}/{port}")]
         public bool Homing(string hostIp, int port)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
             ModesOfOperation modesOfOperation = new ModesOfOperation();
-            modesOfOperation.Write(s, ModesOfOperation.ModesEnum.Homing);
-            while (modesOfOperation.ReadDisplay(s) != ModesOfOperation.ModesEnum.Homing)
+            modesOfOperation.Write(connection.socket, ModesOfOperation.ModesEnum.Homing);
+            while (modesOfOperation.ReadDisplay(connection.socket) != ModesOfOperation.ModesEnum.Homing)
             {
                 Thread.Sleep(100);
             }
@@ -40,13 +40,13 @@ namespace DryveD1API.Controllers
             controlWord.Bit02 = true; // 4
             controlWord.Bit03 = true; // 8
             controlWord.Bit04 = true; // 16
-            controlWord.Write(s);
+            controlWord.Write(connection.socket);
 
             StatusWord statusWord = new StatusWord();
             while (!(statusWord.Bit00 && statusWord.Bit01 && statusWord.Bit02 && statusWord.Bit05 // 39
                 && statusWord.Bit09 && statusWord.Bit10 && statusWord.Bit12)) // 22
             {
-                statusWord.Read(s);
+                statusWord.Read(connection.socket);
                 Thread.Sleep(100);
             }
             return true;
@@ -62,10 +62,10 @@ namespace DryveD1API.Controllers
         [HttpGet("Method/{hostIp}/{port}")]
         public sbyte GetMethod(string hostIp, int port)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
             var telegram = new Telegram();
             telegram.Set(0, AddressConst.HomingMethod, 4);
-            var response = telegram.SendAndReceive(s);
+            var response = telegram.SendAndReceive(connection.socket);
             var result = (sbyte)response.Byte19;
             return result;
         }
@@ -80,12 +80,12 @@ namespace DryveD1API.Controllers
         [HttpPut("Method/{hostIp}/{port}")]
         public void SetMethod(string hostIp, int port, [FromBody] sbyte homingMethod)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
             byte[] data = BitConverter.GetBytes(homingMethod);
             var telegram = new Telegram();
             telegram.Length = 20;
             telegram.Set(1, AddressConst.HomingMethod, 4, 0, data[0]);
-            var response = telegram.SendAndReceive(s);
+            var response = telegram.SendAndReceive(connection.socket);
         }
 
         /// <summary>
@@ -96,13 +96,13 @@ namespace DryveD1API.Controllers
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <returns>Switch search velocity</returns>
         [HttpGet("SwitchSearchVelocity/{hostIp}/{port}")]
-        public uint GetSwitchSearchVelocity(string hostIp, int port)
+        public double GetSwitchSearchVelocity(string hostIp, int port)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
             var telegram = new Telegram();
             telegram.Set(0, AddressConst.HomingSwitchSearchVelocity, 4);
-            var response = telegram.SendAndReceive(s);
-            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0);
+            var response = telegram.SendAndReceive(connection.socket);
+            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) / connection.MultiplicationFactor;
             return result;
         }
 
@@ -114,14 +114,14 @@ namespace DryveD1API.Controllers
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <param name="switchSearchVelocity"></param>
         [HttpPut("SwitchSearchVelocity/{hostIp}/{port}")]
-        public void SetSwitchSearchVelocity(string hostIp, int port, [FromBody] uint switchSearchVelocity)
+        public void SetSwitchSearchVelocity(string hostIp, int port, [FromBody] double switchSearchVelocity)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
-            byte[] data = BitConverter.GetBytes(switchSearchVelocity);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
+            byte[] data = BitConverter.GetBytes((uint)(switchSearchVelocity * connection.MultiplicationFactor));
             var telegram = new Telegram();
             telegram.Length = 23;
             telegram.Set(1, AddressConst.HomingSwitchSearchVelocity, 4, data[0], data[1], data[2], data[3]);
-            var response = telegram.SendAndReceive(s);
+            var response = telegram.SendAndReceive(connection.socket);
         }
 
         /// <summary>
@@ -132,13 +132,13 @@ namespace DryveD1API.Controllers
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <returns>Switch search velocity</returns>
         [HttpGet("ZeroSearchVelocity/{hostIp}/{port}")]
-        public uint GetZeroSearchVelocity(string hostIp, int port)
+        public double GetZeroSearchVelocity(string hostIp, int port)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
             var telegram = new Telegram();
             telegram.Set(0, AddressConst.HomingZeroSearchVelocity, 4);
-            var response = telegram.SendAndReceive(s);
-            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0);
+            var response = telegram.SendAndReceive(connection.socket);
+            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) / connection.MultiplicationFactor;
             return result;
         }
 
@@ -150,14 +150,14 @@ namespace DryveD1API.Controllers
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <param name="zeroSearchVelocity"></param>
         [HttpPut("ZeroSearchVelocity/{hostIp}/{port}")]
-        public void SetZeroSearchVelocity(string hostIp, int port, [FromBody] uint zeroSearchVelocity)
+        public void SetZeroSearchVelocity(string hostIp, int port, [FromBody] double zeroSearchVelocity)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
-            byte[] data = BitConverter.GetBytes(zeroSearchVelocity);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
+            byte[] data = BitConverter.GetBytes((uint)(zeroSearchVelocity * connection.MultiplicationFactor));
             var telegram = new Telegram();
             telegram.Length = 23;
             telegram.Set(1, AddressConst.HomingZeroSearchVelocity, 4, data[0], data[1], data[2], data[3]);
-            var response = telegram.SendAndReceive(s);
+            var response = telegram.SendAndReceive(connection.socket);
         }
 
         /// <summary>
@@ -168,13 +168,13 @@ namespace DryveD1API.Controllers
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <returns></returns>
         [HttpGet("Acceleration/{hostIp}/{port}")]
-        public uint GetAcceleration(string hostIp, int port)
+        public double GetAcceleration(string hostIp, int port)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
             var telegram = new Telegram();
             telegram.Set(0, AddressConst.HomingAcceleration, 4);
-            var response = telegram.SendAndReceive(s);
-            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0);
+            var response = telegram.SendAndReceive(connection.socket);
+            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) / connection.MultiplicationFactor;
             return result;
         }
 
@@ -188,12 +188,12 @@ namespace DryveD1API.Controllers
         [HttpPut("Acceleration/{hostIp}/{port}")]
         public void SetAcceleration(string hostIp, int port, [FromBody] uint acceleration)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
-            byte[] data = BitConverter.GetBytes(acceleration);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
+            byte[] data = BitConverter.GetBytes((uint)(acceleration * connection.MultiplicationFactor));
             var telegram = new Telegram();
             telegram.Length = 23;
             telegram.Set(1, AddressConst.HomingAcceleration, 4, data[0], data[1], data[2], data[3]);
-            var response = telegram.SendAndReceive(s);
+            var response = telegram.SendAndReceive(connection.socket);
         }
     }
 }

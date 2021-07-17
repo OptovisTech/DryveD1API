@@ -21,9 +21,9 @@ namespace DryveD1API.Controllers
         [HttpGet("{hostIp}/{port}")]
         public StatusWord GetStatusWord(string hostIp, int port)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
             StatusWord statusWord = new StatusWord();
-            statusWord.Read(s);
+            statusWord.Read(connection.socket);
             return statusWord;
         }
     }

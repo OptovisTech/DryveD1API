@@ -21,9 +21,9 @@ namespace DryveD1API.Controllers
         [HttpGet("{hostIp}/{port}")]
         public ControlWord GetControlWord(string hostIp, int port)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
             ControlWord controlWord = new ControlWord();
-            controlWord.Read(s);
+            controlWord.Read(connection.socket);
             return controlWord;
         }
 
@@ -37,8 +37,8 @@ namespace DryveD1API.Controllers
         [HttpPut("{hostIp}/{port}")]
         public void SetControlWord(string hostIp, int port, [FromBody] ControlWord controlWord)
         {
-            Socket s = ModbusSocket.GetConnection(hostIp, port);
-            controlWord.Write(s);
+            var connection = ModbusSocket.GetConnection(hostIp, port);
+            controlWord.Write(connection.socket);
         }
     }
 }
