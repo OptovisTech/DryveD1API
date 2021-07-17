@@ -86,29 +86,45 @@
         public static readonly byte[] ProfileDeceleration = { 96, 132 };
 
         /// <summary>
-        /// 
+        /// 6091h sub0<br />
+        /// Number of Entries.
         /// </summary>
-        public static readonly byte[] FeedConstant = { 96, 146, 3 };
+        public static readonly byte[] GearRatioNumberOfEntries = { 96, 145, 0 };
 
         /// <summary>
-        /// 
+        /// 6091h sub1<br />
+        /// Motor shaft revolutions.
         /// </summary>
-        public static readonly byte[] FeedRate = { 96, 146, 1 };
+        public static readonly byte[] GearRatioMotorShaftRevolutions = { 96, 145, 1 };
 
         /// <summary>
-        /// 
+        /// 6091h sub2<br />
+        /// Driving shaft revolutions.
         /// </summary>
-        public static readonly byte[] ShaftRevolution = { 96, 146, 2 };
+        public static readonly byte[] GearRatioDrivingShaftRevolutions = { 96, 145, 2 };
+
+        /// <summary>
+        /// 6092h sub0<br />
+        /// Number of Entries.
+        /// </summary>
+        public static readonly byte[] FeedConstantNumberOfEntries = { 96, 146, 0 };
+
+        /// <summary>
+        /// 6092h sub1<br />
+        /// Feed.
+        /// </summary>
+        public static readonly byte[] FeedConstantFeed = { 96, 146, 1 };
+
+        /// <summary>
+        /// 6092h sub2<br />
+        /// Shaft revolutions.
+        /// </summary>
+        public static readonly byte[] FeedConstantShaftRevolution = { 96, 146, 2 };
 
         /// <summary>
         /// 
         /// </summary>
         public static readonly byte[] HomingMethod = { 96, 152 };
-
-        /// <summary>
-        /// Stipulation of the travel speeds during the homing run (6098h).
-        /// </summary>
-        public static readonly byte[] HomingSpeeds = { 96, 153, 3 };
 
         /// <summary>
         /// 6099h sub0<br />
@@ -127,6 +143,12 @@
         /// Speeds during Search for Zero.
         /// </summary>
         public static readonly byte[] HomingZeroSearchVelocity = { 96, 153, 2 };
+
+        /// <summary>
+        /// 6099h sub3<br />
+        /// Stipulation of the travel speeds during the homing run (6098h).
+        /// </summary>
+        public static readonly byte[] HomingSpeeds = { 96, 153, 3 };
 
         /// <summary>
         /// 

@@ -25,7 +25,7 @@ namespace DryveD1API.Controllers
         {
             Socket s = ModbusSocket.GetConnection(hostIp, port);
             var telegram = new Telegram();
-            telegram.Set(0, AddressConst.FeedRate, 4);
+            telegram.Set(0, AddressConst.FeedConstantFeed, 4);
             var response = telegram.SendAndReceive(s);
             var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0);
             return result;
@@ -45,7 +45,7 @@ namespace DryveD1API.Controllers
             byte[] data = BitConverter.GetBytes(feedRate);
             var telegram = new Telegram();
             telegram.Length = 23;
-            telegram.Set(1, AddressConst.FeedRate, 4, data[0], data[1], data[2], data[3]);
+            telegram.Set(1, AddressConst.FeedConstantFeed, 4, data[0], data[1], data[2], data[3]);
             var response = telegram.SendAndReceive(s);
         }
 
@@ -61,7 +61,7 @@ namespace DryveD1API.Controllers
         {
             Socket s = ModbusSocket.GetConnection(hostIp, port);
             var telegram = new Telegram();
-            telegram.Set(0, AddressConst.ShaftRevolution, 4);
+            telegram.Set(0, AddressConst.FeedConstantShaftRevolution, 4);
             var response = telegram.SendAndReceive(s);
             var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0);
             return result;
@@ -81,7 +81,7 @@ namespace DryveD1API.Controllers
             byte[] data = BitConverter.GetBytes(shaftRevolutions);
             var telegram = new Telegram();
             telegram.Length = 23;
-            telegram.Set(1, AddressConst.ShaftRevolution, 4, data[0], data[1], data[2], data[3]);
+            telegram.Set(1, AddressConst.FeedConstantShaftRevolution, 4, data[0], data[1], data[2], data[3]);
             var response = telegram.SendAndReceive(s);
         }
 
