@@ -8,6 +8,12 @@
     public class AddressConst
     {
         /// <summary>
+        /// 2010h<br />
+        /// Activation of the input signal negation of digital inputs.
+        /// </summary>
+        public static readonly byte[] DigitalInputPolarity = { 32, 16 };
+
+        /// <summary>
         /// 6040h<br />
         /// Object for controlling the dryve D1.
         /// </summary>
@@ -167,7 +173,8 @@
         public static readonly byte[] InterpolationTimePeriod = { 96, 194 };
 
         /// <summary>
-        /// 
+        /// 60FD<br />
+        /// Status display of digital inputs.
         /// </summary>
         public static readonly byte[] DigitalInputs = { 96, 253 };
 

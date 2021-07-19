@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DryveD1API.Controllers
 {
     /// <summary>
-    /// 6040h
+    ///  Read and write the controlword.
     /// </summary>
     [ApiController]
     [Route("[controller]")]
@@ -18,6 +18,7 @@ namespace DryveD1API.Controllers
         /// </summary>
         /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
         /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <returns></returns>
         [HttpGet("{hostIp}/{port}")]
         public ControlWord GetControlWord(string hostIp, int port)
         {

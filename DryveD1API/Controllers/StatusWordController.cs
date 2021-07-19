@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DryveD1API.Controllers
 {
     /// <summary>
-    /// 6041h
+    /// Read the status word.
     /// </summary>
     [ApiController]
     [Route("[controller]")]

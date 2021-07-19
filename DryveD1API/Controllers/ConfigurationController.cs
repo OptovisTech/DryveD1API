@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DryveD1API.Controllers
 {
     /// <summary>
-    /// 
+    ///  Read and write configuration specific values.
     /// </summary>
     [ApiController]
     [Route("[controller]")]
@@ -57,7 +57,7 @@ namespace DryveD1API.Controllers
         /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <returns></returns>
-        [HttpGet("GearRatioMotorShaftRevolutions/{hostIp}/{port}")]
+        [HttpGet("GearRatioDrivingShaftRevolutions/{hostIp}/{port}")]
         public uint GetGearRatioDrivingShaftRevolutions(string hostIp, int port)
         {
             var connection = ModbusSocket.GetConnection(hostIp, port);
@@ -75,7 +75,7 @@ namespace DryveD1API.Controllers
         /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <param name="feedRate"></param>
-        [HttpPut("GearRatioMotorShaftRevolutions/{hostIp}/{port}")]
+        [HttpPut("GearRatioDrivingShaftRevolutions/{hostIp}/{port}")]
         public void SetGearRatioDrivingShaftRevolutions(string hostIp, int port, [FromBody] uint drivingShaftRevolutions)
         {
             var connection = ModbusSocket.GetConnection(hostIp, port);

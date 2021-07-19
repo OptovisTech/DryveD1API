@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DryveD1API.Controllers
 {
     /// <summary>
-    /// 
+    ///  Read and write homing specific values.
     /// </summary>
     [ApiController]
     [Route("[controller]")]
