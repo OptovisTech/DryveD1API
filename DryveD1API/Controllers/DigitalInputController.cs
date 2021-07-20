@@ -20,7 +20,7 @@ namespace DryveD1API.Controllers
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <returns></returns>
         [HttpGet("{hostIp}/{port}")]
-        public DigitalInputs GetDigitalInputs(string hostIp, int port)
+        public DigitalInputs Get(string hostIp, int port)
         {
             var connection = ModbusSocket.GetConnection(hostIp, port);
             var digitalInputs = new DigitalInputs();
@@ -36,7 +36,7 @@ namespace DryveD1API.Controllers
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <returns></returns>
         [HttpGet("Polarity/{hostIp}/{port}")]
-        public DigitalInputPolarity GetDigitalInputPolarity(string hostIp, int port)
+        public DigitalInputPolarity GetPolarity(string hostIp, int port)
         {
             var connection = ModbusSocket.GetConnection(hostIp, port);
             var digitalInputPolarity = new DigitalInputPolarity();
@@ -52,7 +52,7 @@ namespace DryveD1API.Controllers
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <param name="digitalInputPolarity"></param>
         [HttpPut("Polarity/{hostIp}/{port}")]
-        public void SetDigitalInputPolarity(string hostIp, int port, [FromBody] DigitalInputPolarity digitalInputPolarity)
+        public void SetPolarity(string hostIp, int port, [FromBody] DigitalInputPolarity digitalInputPolarity)
         {
             var connection = ModbusSocket.GetConnection(hostIp, port);
             digitalInputPolarity.Write(connection.socket);
@@ -67,7 +67,7 @@ namespace DryveD1API.Controllers
         /// <param name="digitalInput"></param>
         /// <returns></returns>
         [HttpPut("Toggle/{hostIp}/{port}/{digitalInput}")]
-        public bool ToggleDigitalInputPolarity(string hostIp, int port, int digitalInput)
+        public bool TogglePolarity(string hostIp, int port, int digitalInput)
         {
             var connection = ModbusSocket.GetConnection(hostIp, port);
             var digitalInputPolarity = new DigitalInputPolarity();

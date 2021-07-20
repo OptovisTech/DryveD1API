@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Net.Sockets;
+using System.Threading;
 using DryveD1API.Common;
 
 namespace DryveD1API.Modules
@@ -94,16 +95,18 @@ namespace DryveD1API.Modules
             Read(s);
             bool firstState = NegateDigitalInput(digitalInput);
             Write(s);
+            Thread.Sleep(100);
 
 
             Read(s);
             bool secondState = NegateDigitalInput(digitalInput);
-            Write(s);
+
             if (secondState == firstState)
             {
                 return false;
             }
-
+            Write(s);
+            Thread.Sleep(100);
             Read(s);
             bool thirdState = NegateDigitalInput(digitalInput);
             if (thirdState != firstState)

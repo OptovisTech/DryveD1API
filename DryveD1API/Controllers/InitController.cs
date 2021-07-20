@@ -47,14 +47,7 @@ namespace DryveD1API.Controllers
             // Byte 19: 6
             controlWord.Bit01 = true; // 2
             controlWord.Write(s);
-
-            StatusWord statusWord = new StatusWord();
-            while (!(statusWord.Bit00 && statusWord.Bit05 // 33
-                && statusWord.Bit09)) // 2
-            {
-                statusWord.Read(s);
-                Thread.Sleep(100);
-            }
+            Thread.Sleep(100);
         }
 
         private void ShutDown(Socket s)

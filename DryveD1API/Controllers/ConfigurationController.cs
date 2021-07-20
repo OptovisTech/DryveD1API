@@ -181,15 +181,15 @@ namespace DryveD1API.Controllers
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <param name="movementTypeString"></param>
         /// <param name="multiplicationFactorString"></param>
-        [HttpPut("SIUnitPosition/{hostIp}/{port}/{MovementType}/{MultiplicationFactor}")]
-        public void SetSIUnitPosition(string hostIp, int port, string movementTypeString, string multiplicationFactorString)
+        [HttpPut("SIUnitPosition/{hostIp}/{port}")]
+        public void SetSIUnitPosition(string hostIp, int port, [FromBody] string[] data)
         {
             var connection = ModbusSocket.GetConnection(hostIp, port);
             var siUnitPosition = new SIUnitPosition();
-            if (Enum.TryParse(movementTypeString, out MovementTypeEnum movementType))
+            if (Enum.TryParse(data[0], out MovementTypeEnum movementType))
             {
                 siUnitPosition.MovementType = movementType;
-                siUnitPosition.SetMultiplicationFactor(multiplicationFactorString);
+                siUnitPosition.SetMultiplicationFactor(data[1]);
                 siUnitPosition.Write(connection.socket);
                 connection.MultiplicationFactor = siUnitPosition.GetMultiplicationFactorValue();
             }
