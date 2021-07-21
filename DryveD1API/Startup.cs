@@ -44,11 +44,11 @@ namespace DryveD1API
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DryveD1API v1"));
             }
             applicationLifetime.ApplicationStopping.Register(OnShutdown);
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
