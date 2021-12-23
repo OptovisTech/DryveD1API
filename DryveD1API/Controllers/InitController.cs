@@ -31,7 +31,7 @@ namespace DryveD1API.Controllers
 
             while (modesOfOperation.ReadDisplay(connection.socket) != ModesOfOperation.ModesEnum.ProfilePosition)
             {
-                Thread.Sleep(100);
+                Thread.Sleep(10);
             }
 
             Reset(connection.socket);
@@ -47,7 +47,7 @@ namespace DryveD1API.Controllers
             // Byte 19: 6
             controlWord.Bit01 = true; // 2
             controlWord.Write(s);
-            Thread.Sleep(100);
+            Thread.Sleep(10);
         }
 
         private void ShutDown(Socket s)
@@ -63,7 +63,7 @@ namespace DryveD1API.Controllers
                 && statusWord.Bit09)) // 2
             {
                 statusWord.Read(s);
-                Thread.Sleep(100);
+                Thread.Sleep(10);
             }
         }
 
@@ -81,7 +81,7 @@ namespace DryveD1API.Controllers
                 && statusWord.Bit09)) // 2
             {
                 statusWord.Read(s);
-                Thread.Sleep(100);
+                Thread.Sleep(10);
             }
         }
 
@@ -100,7 +100,7 @@ namespace DryveD1API.Controllers
                 && statusWord.Bit09)) // 2
             {
                 statusWord.Read(s);
-                Thread.Sleep(100);
+                Thread.Sleep(10);
             }
         }
     }
