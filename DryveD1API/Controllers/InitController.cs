@@ -34,9 +34,15 @@ namespace DryveD1API.Controllers
                 Thread.Sleep(10);
             }
 
-            Reset(connection.socket);
-            ShutDown(connection.socket);
-            SwitchOn(connection.socket);
+            StatusWord status = new StatusWord();
+            status.Read(connection.socket);
+            if (!status.Bit01 && !status.Bit02 && status.Bit06)
+            {
+                Reset(connection.socket);
+                ShutDown(connection.socket);
+                SwitchOn(connection.socket);
+            }
+
             EnableOperation(connection.socket);
             return true;
         }
@@ -60,7 +66,7 @@ namespace DryveD1API.Controllers
 
             StatusWord statusWord = new StatusWord();
             while (!(statusWord.Bit00 && statusWord.Bit05 // 33
-                && statusWord.Bit09)) // 2
+                                      && statusWord.Bit09)) // 2
             {
                 statusWord.Read(s);
                 Thread.Sleep(10);
@@ -78,7 +84,7 @@ namespace DryveD1API.Controllers
 
             StatusWord statusWord = new StatusWord();
             while (!(statusWord.Bit00 && statusWord.Bit01 && statusWord.Bit05 // 35
-                && statusWord.Bit09)) // 2
+                     && statusWord.Bit09)) // 2
             {
                 statusWord.Read(s);
                 Thread.Sleep(10);
@@ -97,7 +103,7 @@ namespace DryveD1API.Controllers
 
             StatusWord statusWord = new StatusWord();
             while (!(statusWord.Bit00 && statusWord.Bit01 && statusWord.Bit02 && statusWord.Bit05 // 39
-                && statusWord.Bit09)) // 2
+                     && statusWord.Bit09)) // 2
             {
                 statusWord.Read(s);
                 Thread.Sleep(10);
