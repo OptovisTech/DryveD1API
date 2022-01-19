@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using DryveD1API.Common;
 using DryveD1API.Modules;
@@ -77,8 +79,69 @@ namespace DryveD1API.Controllers
             var telegram = new Telegram();
             telegram.Set(0, AddressConst.PositionActualValue, 4);
             var response = telegram.SendAndReceive(connection.socket);
-            var result = BitConverter.ToInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) / connection.MultiplicationFactor;
+            var result = BitConverter.ToInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) /
+                         connection.MultiplicationFactor;
             return result;
+        }
+
+        /// <summary>
+        /// 6064h<br />
+        /// Indication of the current position of the position encoder.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="allowedDeviation">The permissible deviation of the 3 actual position readings from each other.</param>
+        /// <returns>The actual value of the position encoder</returns>
+        [HttpGet("ActualPositionWithValidation/{hostIp}/{port}/{allowedDeviation:double}")]
+        public object[] GetActualPositionWithValidation(string hostIp, int port, double allowedDeviation)
+        {
+            var connection = ModbusSocket.GetConnection(hostIp, port);
+            
+            var isValid = false;
+            var retryCounter = 0;
+            
+            double result = 0;
+            while (!isValid)
+            {
+                // FirstCheck
+                var telegram1 = new Telegram();
+                telegram1.Set(0, AddressConst.PositionActualValue, 4);
+                var response1 = telegram1.SendAndReceive(connection.socket);
+                var result1 = BitConverter.ToInt32(new byte[] { response1.Byte19, response1.Byte20, response1.Byte21, response1.Byte22 }, 0) /
+                              connection.MultiplicationFactor;
+                Thread.Sleep(5);
+                // SecondCheck
+                var telegram2 = new Telegram();
+                telegram2.Set(0, AddressConst.PositionActualValue, 4);
+                var response2 = telegram2.SendAndReceive(connection.socket);
+                var result2 = BitConverter.ToInt32(new byte[] { response2.Byte19, response2.Byte20, response2.Byte21, response2.Byte22 }, 0) /
+                              connection.MultiplicationFactor;
+                Thread.Sleep(5);
+                // ThirdCheck
+                var telegram3 = new Telegram();
+                telegram3.Set(0, AddressConst.PositionActualValue, 4);
+                var response3 = telegram3.SendAndReceive(connection.socket);
+                var result3 = BitConverter.ToInt32(new byte[] { response3.Byte19, response3.Byte20, response3.Byte21, response3.Byte22 }, 0) /
+                              connection.MultiplicationFactor;
+                if (Math.Abs(result1 - result2) <= allowedDeviation && Math.Abs(result1 - result3) <= allowedDeviation &&
+                    Math.Abs(result2 - result3) <= allowedDeviation)
+                {
+                    isValid = true;
+                    result = (result1 + result2 + result3) / 3;
+                }
+                else
+                {
+                    Debug.WriteLine($"Actual position reading was not valid: 1: {result1}, 2: {result2}, 3: {result3}");
+                    Thread.Sleep(5);
+                    retryCounter++;
+                    if (retryCounter >= 10)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return new object[] { isValid, result };
         }
 
         /// <summary>
@@ -96,7 +159,8 @@ namespace DryveD1API.Controllers
             var telegram = new Telegram();
             telegram.Set(0, AddressConst.PositionWindow, 4);
             var response = telegram.SendAndReceive(connection.socket);
-            var result = BitConverter.ToInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) / connection.MultiplicationFactor;
+            var result = BitConverter.ToInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) /
+                         connection.MultiplicationFactor;
             return result;
         }
 
@@ -117,7 +181,6 @@ namespace DryveD1API.Controllers
             var response = telegram.SendAndReceive(connection.socket);
             var result = BitConverter.ToUInt16(new byte[] { response.Byte19, response.Byte20 }, 0);
             return result;
-
         }
 
         /// <summary>
@@ -134,7 +197,8 @@ namespace DryveD1API.Controllers
             var telegram = new Telegram();
             telegram.Set(0, AddressConst.TargetPosition, 4);
             var response = telegram.SendAndReceive(connection.socket);
-            var result = BitConverter.ToInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) / connection.MultiplicationFactor;
+            var result = BitConverter.ToInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) /
+                         connection.MultiplicationFactor;
             return result;
         }
 
@@ -170,7 +234,8 @@ namespace DryveD1API.Controllers
             var telegram = new Telegram();
             telegram.Set(0, AddressConst.ProfileVelocity, 4);
             var response = telegram.SendAndReceive(connection.socket);
-            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) / connection.MultiplicationFactor;
+            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) /
+                         connection.MultiplicationFactor;
             return result;
         }
 
@@ -206,7 +271,8 @@ namespace DryveD1API.Controllers
             var telegram = new Telegram();
             telegram.Set(0, AddressConst.ProfileAcceleration, 4);
             var response = telegram.SendAndReceive(connection.socket);
-            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) / connection.MultiplicationFactor;
+            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) /
+                         connection.MultiplicationFactor;
             return result;
         }
 
@@ -242,7 +308,8 @@ namespace DryveD1API.Controllers
             var telegram = new Telegram();
             telegram.Set(0, AddressConst.ProfileDeceleration, 4);
             var response = telegram.SendAndReceive(connection.socket);
-            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) / connection.MultiplicationFactor;
+            var result = BitConverter.ToUInt32(new byte[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) /
+                         connection.MultiplicationFactor;
             return result;
         }
 
