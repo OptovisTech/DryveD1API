@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 using DryveD1API.Common;
 
 namespace DryveD1API.Modules
@@ -9,7 +11,7 @@ namespace DryveD1API.Modules
     /// 60FD<br />
     /// Status display of digital inputs.
     /// </summary>
-    public class DigitalInputs
+    public sealed class DigitalInputs
     {
         private static byte ByteNumber { get => 4; }
 
@@ -17,126 +19,157 @@ namespace DryveD1API.Modules
         /// DI 9 Negative Limit Switch
         /// </summary>
         public bool Bit00 { get; set; }
+
         /// <summary>
         /// DI 8 Positive Limit Switch
         /// </summary>
         public bool Bit01 { get; set; }
+
         /// <summary>
         /// Not Assigned
         /// </summary>
         public bool Bit02 { get; set; }
+
         /// <summary>
         /// Enable
         /// </summary>
         public bool Bit03 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit04 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit05 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit06 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit07 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit08 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit09 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit10 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit11 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit12 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit13 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit14 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit15 { get; set; }
+
         /// <summary>
         /// DI 1
         /// </summary>
         public bool Bit16 { get; set; }
+
         /// <summary>
         /// DI 2
         /// </summary>
         public bool Bit17 { get; set; }
+
         /// <summary>
         /// DI 3
         /// </summary>
         public bool Bit18 { get; set; }
+
         /// <summary>
         /// DI 4
         /// </summary>
         public bool Bit19 { get; set; }
+
         /// <summary>
         /// DI 5
         /// </summary>
         public bool Bit20 { get; set; }
+
         /// <summary>
         /// DI 6
         /// </summary>
         public bool Bit21 { get; set; }
+
         /// <summary>
         /// DI 7
         /// </summary>
         public bool Bit22 { get; set; }
+
         /// <summary>
         /// DI 8
         /// </summary>
         public bool Bit23 { get; set; }
+
         /// <summary>
         /// DI 9
         /// </summary>
         public bool Bit24 { get; set; }
+
         /// <summary>
         /// DI 10
         /// </summary>
         public bool Bit25 { get; set; }
+
         /// <summary>
         /// Not Assigned
         /// </summary>
         public bool Bit26 { get; set; }
+
         /// <summary>
         /// Not Assigned
         /// </summary>
         public bool Bit27 { get; set; }
+
         /// <summary>
         /// Not Assigned
         /// </summary>
         public bool Bit28 { get; set; }
+
         /// <summary>
         /// Not Assigned
         /// </summary>
         public bool Bit29 { get; set; }
+
         /// <summary>
         /// Not Assigned
         /// </summary>
         public bool Bit30 { get; set; }
+
         /// <summary>
         /// Not Assigned
         /// </summary>
@@ -194,6 +227,14 @@ namespace DryveD1API.Modules
             var telegram = new Telegram();
             telegram.Set(0, AddressConst.DigitalInputs, ByteNumber);
             var result = telegram.SendAndReceive(s);
+            Set(result.Byte19, result.Byte20, result.Byte21, result.Byte22);
+        }
+
+        public async Task ReadAsync(Socket s, CancellationToken cancellationToken)
+        {
+            var telegram = new Telegram();
+            telegram.Set(0, AddressConst.DigitalInputs, ByteNumber);
+            var result = await telegram.SendAndReceiveAsync(s, cancellationToken);
             Set(result.Byte19, result.Byte20, result.Byte21, result.Byte22);
         }
     }

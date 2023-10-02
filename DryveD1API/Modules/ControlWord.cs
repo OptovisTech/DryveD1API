@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using DryveD1API.Common;
 
@@ -10,7 +11,7 @@ namespace DryveD1API.Modules
     /// 6040h<br />
     /// Object for controlling the dryve D1
     /// </summary>
-    public class ControlWord
+    public sealed class ControlWord
     {
         private static byte ByteNumber { get => 2; }
 
@@ -18,67 +19,81 @@ namespace DryveD1API.Modules
         /// Switch On
         /// </summary>
         public bool Bit00 { get; set; }
+
         /// <summary>
         /// Enable Voltage
         /// </summary>
         public bool Bit01 { get; set; }
+
         /// <summary>
         /// Quick-Stop
         /// </summary>
         public bool Bit02 { get; set; }
+
         /// <summary>
         /// Enable Operation
         /// </summary>
         public bool Bit03 { get; set; }
+
         /// <summary>
         /// Mode Specific
         /// </summary>
         public bool Bit04 { get; set; }
+
         /// <summary>
         /// Mode Specific
         /// </summary>
         public bool Bit05 { get; set; }
+
         /// <summary>
         /// Mode Specific
         /// </summary>
         public bool Bit06 { get; set; }
+
         /// <summary>
         /// Fault Reset
         /// </summary>
         public bool Bit07 { get; set; }
+
         /// <summary>
         /// Halt
         /// </summary>
         public bool Bit08 { get; set; }
+
         /// <summary>
         /// Mode Specific
         /// </summary>
         public bool Bit09 { get; set; }
+
         /// <summary>
         /// Reserved
         /// </summary>
         public bool Bit10 { get; set; }
+
         /// <summary>
         /// Manufacturer Specific
         /// </summary>
         public bool Bit11 { get; set; }
+
         /// <summary>
         /// Manufacturer Specific
         /// </summary>
         public bool Bit12 { get; set; }
+
         /// <summary>
         /// Manufacturer Specific
         /// </summary>
         public bool Bit13 { get; set; }
+
         /// <summary>
         /// Manufacturer Specific
         /// </summary>
         public bool Bit14 { get; set; }
+
         /// <summary>
         /// Manufacturer Specific
         /// </summary>
         public bool Bit15 { get; set; }
-
 
         private void Set(byte byte19, byte byte20)
         {
@@ -118,6 +133,19 @@ namespace DryveD1API.Modules
         }
 
         /// <summary>
+        /// Reads and sets the ControlWord
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="cancellationToken"></param>
+        public async Task ReadAsync(Socket s, CancellationToken cancellationToken)
+        {
+            var telegram = new Telegram();
+            telegram.Set(0, AddressConst.ControlWord, ByteNumber);
+            var result = await telegram.SendAndReceiveAsync(s, cancellationToken);
+            Set(result.Byte19, result.Byte20);
+        }
+
+        /// <summary>
         /// Writes the current ControlWord to the controller
         /// </summary>
         /// <param name="s"></param>
@@ -138,16 +166,38 @@ namespace DryveD1API.Modules
             var result = telegram.SendAndReceive(s);
         }
 
+        /// <summary>
+        /// Writes the current ControlWord to the controller
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="cancellationToken"></param>
+        public async Task WriteAsync(Socket s, CancellationToken cancellationToken)
+        {
+            var bitArray19 = new BitArray(new bool[8] { Bit00, Bit01, Bit02, Bit03, Bit04, Bit05, Bit06, Bit07 });
+            var bitArray20 = new BitArray(new bool[8] { Bit08, Bit09, Bit10, Bit11, Bit12, Bit13, Bit14, Bit15 });
+
+            byte[] byte19 = new byte[1];
+            bitArray19.CopyTo(byte19, 0);
+
+            byte[] byte20 = new byte[1];
+            bitArray20.CopyTo(byte20, 0);
+
+            var telegram = new Telegram();
+            telegram.Length = 21;
+            telegram.Set(1, AddressConst.ControlWord, ByteNumber, byte19[0], byte20[0]);
+            var result = await telegram.SendAndReceiveAsync(s, cancellationToken);
+        }
+
         public void Start(Socket s)
         {
             Task.Delay(TimeSpan.FromMilliseconds(250)).ConfigureAwait(true);
 
             // Byte 19:     // 31
-            Bit00 = true;   // 1
-            Bit01 = true;   // 2
-            Bit02 = true;   // 4
-            Bit03 = true;   // 8
-            Bit04 = true;    // 16
+            Bit00 = true; // 1
+            Bit01 = true; // 2
+            Bit02 = true; // 4
+            Bit03 = true; // 8
+            Bit04 = true; // 16
             Write(s);
         }
     }

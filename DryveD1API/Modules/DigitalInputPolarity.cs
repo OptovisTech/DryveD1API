@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using DryveD1API.Common;
 
 namespace DryveD1API.Modules
@@ -10,7 +11,7 @@ namespace DryveD1API.Modules
     /// 2010h<br />
     /// Activation of the input signal negation of digital inputs.
     /// </summary>
-    public class DigitalInputPolarity
+    public sealed class DigitalInputPolarity
     {
         private static byte ByteNumber { get => 4; }
 
@@ -30,7 +31,6 @@ namespace DryveD1API.Modules
         public bool DI14 { get; set; }
         public bool DI15 { get; set; }
         public bool DI16 { get; set; }
-
 
         private void Set(byte byte19, byte byte20)
         {
@@ -70,6 +70,19 @@ namespace DryveD1API.Modules
         }
 
         /// <summary>
+        /// Reads and sets the ControlWord
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="cancellationToken"></param>
+        public async Task ReadAsync(Socket s, CancellationToken cancellationToken)
+        {
+            var telegram = new Telegram();
+            telegram.Set(0, AddressConst.DigitalInputPolarity, ByteNumber);
+            var result = await telegram.SendAndReceiveAsync(s, cancellationToken);
+            Set(result.Byte19, result.Byte20);
+        }
+
+        /// <summary>
         /// Writes the current ControlWord to the controller
         /// </summary>
         /// <param name="s"></param>
@@ -78,65 +91,140 @@ namespace DryveD1API.Modules
             var bitArray19 = new BitArray(new bool[8] { DI01, DI02, DI03, DI04, DI05, DI06, DI07, DI08 });
             var bitArray20 = new BitArray(new bool[8] { DI09, DI10, DI11, DI12, DI13, DI14, DI15, DI16 });
 
-            byte[] byte19 = new byte[1];
+            var byte19 = new byte[1];
             bitArray19.CopyTo(byte19, 0);
 
-            byte[] byte20 = new byte[1];
+            var byte20 = new byte[1];
             bitArray20.CopyTo(byte20, 0);
 
-            var telegram = new Telegram();
-            telegram.Length = 21;
+            var telegram = new Telegram
+            {
+                Length = 21
+            };
             telegram.Set(1, AddressConst.DigitalInputPolarity, ByteNumber, byte19[0], byte20[0], 0, 0);
-            var result = telegram.SendAndReceive(s);
+            var unused = telegram.SendAndReceive(s);
+        }
+
+        /// <summary>
+        /// Writes the current ControlWord to the controller
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="cancellationToken"></param>
+        public async Task WriteAsync(Socket s, CancellationToken cancellationToken)
+        {
+            var bitArray19 = new BitArray(new bool[8] { DI01, DI02, DI03, DI04, DI05, DI06, DI07, DI08 });
+            var bitArray20 = new BitArray(new bool[8] { DI09, DI10, DI11, DI12, DI13, DI14, DI15, DI16 });
+
+            var byte19 = new byte[1];
+            bitArray19.CopyTo(byte19, 0);
+
+            var byte20 = new byte[1];
+            bitArray20.CopyTo(byte20, 0);
+
+            var telegram = new Telegram
+            {
+                Length = 21
+            };
+            telegram.Set(1, AddressConst.DigitalInputPolarity, ByteNumber, byte19[0], byte20[0], 0, 0);
+            var unused = await telegram.SendAndReceiveAsync(s, cancellationToken);
         }
 
         public bool ToggleDigitalInput(Socket s, int digitalInput)
         {
             Read(s);
-            bool firstState = NegateDigitalInput(digitalInput);
+            var firstState = NegateDigitalInput(digitalInput);
             Write(s);
             Thread.Sleep(100);
 
-
             Read(s);
-            bool secondState = NegateDigitalInput(digitalInput);
+            var secondState = NegateDigitalInput(digitalInput);
 
             if (secondState == firstState)
             {
                 return false;
             }
+
             Write(s);
             Thread.Sleep(100);
             Read(s);
-            bool thirdState = NegateDigitalInput(digitalInput);
-            if (thirdState != firstState)
+            var thirdState = NegateDigitalInput(digitalInput);
+            return thirdState == firstState;
+        }
+
+        public async Task<bool> ToggleDigitalInputAsync(Socket s, int digitalInput, CancellationToken cancellationToken)
+        {
+            await ReadAsync(s, cancellationToken);
+            var firstState = NegateDigitalInput(digitalInput);
+            await WriteAsync(s, cancellationToken);
+            await Task.Delay(100, cancellationToken);
+
+            await ReadAsync(s, cancellationToken);
+            var secondState = NegateDigitalInput(digitalInput);
+
+            if (secondState == firstState)
             {
                 return false;
             }
-            return true;
 
+            await WriteAsync(s, cancellationToken);
+            await Task.Delay(100, cancellationToken);
+            await ReadAsync(s, cancellationToken);
+            var thirdState = NegateDigitalInput(digitalInput);
+            return thirdState == firstState;
         }
 
         private bool NegateDigitalInput(int digitalInput)
         {
             switch (digitalInput)
             {
-                case 1: DI01 = !DI01; return !DI01;
-                case 2: DI02 = !DI02; return !DI02;
-                case 3: DI03 = !DI03; return !DI03;
-                case 4: DI04 = !DI04; return !DI04;
-                case 5: DI05 = !DI05; return !DI05;
-                case 6: DI06 = !DI06; return !DI06;
-                case 7: DI07 = !DI07; return !DI07;
-                case 8: DI08 = !DI08; return !DI08;
-                case 9: DI09 = !DI09; return !DI09;
-                case 10: DI10 = !DI10; return !DI10;
-                case 11: DI11 = !DI11; return !DI11;
-                case 12: DI12 = !DI12; return !DI12;
-                case 13: DI13 = !DI13; return !DI13;
-                case 14: DI14 = !DI14; return !DI14;
-                case 15: DI15 = !DI15; return !DI15;
-                case 16: DI16 = !DI16; return !DI16;
+                case 1:
+                    DI01 = !DI01;
+                    return !DI01;
+                case 2:
+                    DI02 = !DI02;
+                    return !DI02;
+                case 3:
+                    DI03 = !DI03;
+                    return !DI03;
+                case 4:
+                    DI04 = !DI04;
+                    return !DI04;
+                case 5:
+                    DI05 = !DI05;
+                    return !DI05;
+                case 6:
+                    DI06 = !DI06;
+                    return !DI06;
+                case 7:
+                    DI07 = !DI07;
+                    return !DI07;
+                case 8:
+                    DI08 = !DI08;
+                    return !DI08;
+                case 9:
+                    DI09 = !DI09;
+                    return !DI09;
+                case 10:
+                    DI10 = !DI10;
+                    return !DI10;
+                case 11:
+                    DI11 = !DI11;
+                    return !DI11;
+                case 12:
+                    DI12 = !DI12;
+                    return !DI12;
+                case 13:
+                    DI13 = !DI13;
+                    return !DI13;
+                case 14:
+                    DI14 = !DI14;
+                    return !DI14;
+                case 15:
+                    DI15 = !DI15;
+                    return !DI15;
+                case 16:
+                    DI16 = !DI16;
+                    return !DI16;
                 default: return false;
             }
         }

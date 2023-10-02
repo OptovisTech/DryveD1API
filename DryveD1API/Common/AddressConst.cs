@@ -165,7 +165,7 @@
         /// 60A8h<br />
         /// Movement type and multiplication factor.
         /// </summary>
-        public static readonly byte[] SIUnitPosition = { 96, 168 };
+        public static readonly byte[] SiUnitPosition = { 96, 168 };
 
         /// <summary>
         /// 

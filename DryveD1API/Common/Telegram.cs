@@ -1,4 +1,6 @@
 ﻿using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DryveD1API.Common
 {
@@ -12,100 +14,117 @@ namespace DryveD1API.Common
         /// </summary>
         public int Length { get; set; } = 19;
 
-        private byte[] data { get => FillData(); }
+        private byte[] data => FillData();
 
         /// Big Endian
-
         /// <summary>
         /// Transaction Identifier.
         /// Value: 0
         /// </summary>
         private byte Byte00 { get => 0; }
+
         /// <summary>
         /// Transaction Identifier.
         /// Value: 0
         /// </summary>
         private byte Byte01 { get => 0; }
+
         /// <summary>
         /// Protocol Identifier.
         /// Value: 0
         /// </summary>
         private byte Byte02 { get => 0; }
+
         /// <summary>
         /// Protocol Identifier.
         /// Value: 0
         /// </summary>
         private byte Byte03 { get => 0; }
+
         /// <summary>
         /// Lenght.
         /// Value: 0
         /// </summary>
         private byte Byte04 { get => 0; }
+
         /// <summary>
         /// Lenght.
         /// Value: 13-17
         /// </summary>
         private byte Byte05 { get => (byte)(Length - 6); }
+
         /// <summary>
         /// Unit Identifier.
         /// Value: 0
         /// </summary>
         private byte Byte06 { get => 0; }
+
         /// <summary>
         /// Function code.
         /// Value: 43
         /// </summary>
         private byte Byte07 { get => 43; }
+
         /// <summary>
         /// MEI type.
         /// Value: 13
         /// </summary>
         private byte Byte08 { get => 13; }
+
         /// <summary>
         /// Protocol control.
         /// Value: 0 = Read / 1 = Write
         /// </summary>
         private byte Byte09 { get; set; }
+
         /// <summary>
         /// Protocol option field.
         /// Value: 0
         /// </summary>
         private byte Byte10 { get => 0; }
+
         /// <summary>
         /// Node ID.
         /// Value: 0
         /// </summary>
         private byte Byte11 { get => 0; }
+
         /// <summary>
         /// Object Index 1.
         /// Value: SDO Object
         /// </summary>
         private byte Byte12 { get; set; }
+
         /// <summary>
         /// Object Index 2.
         /// Value: SDO Object
         /// </summary>
         private byte Byte13 { get; set; }
+
         /// <summary>
         /// Sub Index.
         /// Value: SDO Object
         /// </summary>
         private byte Byte14 { get; set; }
+
         /// <summary>
         /// Starting Address.
         /// Value: 0
         /// </summary>
         private byte Byte15 { get => 0; }
+
         /// <summary>
         /// Starting Address.
         /// Value: 0
         /// </summary>
         private byte Byte16 { get => 0; }
+
         /// <summary>
         /// SDO Object.
         /// Value: 0
         /// </summary>
         private byte Byte17 { get => 0; }
+
         /// <summary>
         /// Byte Number.
         /// Value: 1-4
@@ -113,19 +132,21 @@ namespace DryveD1API.Common
         private byte Byte18 { get; set; }
 
         /// Little Endian
-
         /// <summary>
         /// Data Field
         /// </summary>
         public byte Byte19 { get; set; }
+
         /// <summary>
         /// Data Field
         /// </summary>
         public byte Byte20 { get; set; }
+
         /// <summary>
         /// Data Field
         /// </summary>
         public byte Byte21 { get; set; }
+
         /// <summary>
         /// Data Field
         /// </summary>
@@ -157,6 +178,7 @@ namespace DryveD1API.Common
             {
                 Byte14 = 0;
             }
+
             Byte18 = byte18;
             Byte19 = byte19;
             Byte20 = byte20;
@@ -170,6 +192,7 @@ namespace DryveD1API.Common
             {
                 Length = 23;
             }
+
             byte[] telegram = new byte[Length];
             telegram[0] = Byte00;
             telegram[1] = Byte01;
@@ -194,18 +217,22 @@ namespace DryveD1API.Common
             {
                 telegram[19] = Byte19;
             }
+
             if (Length >= 21)
             {
                 telegram[20] = Byte20;
             }
+
             if (Length >= 22)
             {
                 telegram[21] = Byte21;
             }
+
             if (Length == 23)
             {
                 telegram[22] = Byte22;
             }
+
             return telegram;
         }
 
@@ -235,6 +262,25 @@ namespace DryveD1API.Common
             byte[] bytesReceived = new byte[23];
             _ = s.Receive(bytesReceived, bytesReceived.Length, 0);
             Telegram response = new Telegram();
+            response.FillBytes(bytesReceived);
+            response.Length = bytesReceived[5] + 6;
+            return response;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<Telegram> SendAndReceiveAsync(Socket s, CancellationToken cancellationToken)
+        {
+            // Send request to the server.
+            var sentBytes = await s.SendAsync(data, SocketFlags.None, cancellationToken);
+            // Receive data from the server.
+            var bytesReceived = new byte[23];
+            var receivedBytes = await s.ReceiveAsync(bytesReceived, SocketFlags.None, cancellationToken);
+            var response = new Telegram();
             response.FillBytes(bytesReceived);
             response.Length = bytesReceived[5] + 6;
             return response;

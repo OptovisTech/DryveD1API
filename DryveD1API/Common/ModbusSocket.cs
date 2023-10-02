@@ -11,47 +11,49 @@ namespace DryveD1API.Common
     /// </summary>
     public static class ModbusSocket
     {
-        private static Dictionary<IPAddress, ControllerConnection> connectionList;
+        private static Dictionary<IPAddress, ControllerConnection> _connectionList;
 
-
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="server"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
         public static ControllerConnection GetConnection(string server, int port)
         {
+            _connectionList ??= new Dictionary<IPAddress, ControllerConnection>();
 
-            if (connectionList is null)
-            {
-                connectionList = new Dictionary<IPAddress, ControllerConnection>();
-            }
-            IPAddress ipAddress = IPAddress.Parse(server);
-            Stopwatch watch = new Stopwatch();
+            var ipAddress = IPAddress.Parse(server);
+            var watch = new Stopwatch();
             watch.Start();
-            if (connectionList.ContainsKey(ipAddress))
+            if (_connectionList.ContainsKey(ipAddress))
             {
-                var connection = connectionList[ipAddress];
-                if (connection.socket.Connected)
+                var connection = _connectionList[ipAddress];
+                if (connection.Socket.Connected)
                 {
                     watch.Stop();
                     Debug.WriteLine($"Connected: {watch.ElapsedMilliseconds}");
                     return connection;
                 }
-                else
-                {
-                    connectionList.Remove(ipAddress);
-                    connection.socket = Connect(ipAddress, port);
-                    connection.MultiplicationFactor = GetMultiplicationFactor(connection.socket);
-                    connectionList.Add(ipAddress, connection);
-                    watch.Stop();
-                    Debug.WriteLine($"Not connected: {watch.ElapsedMilliseconds}");
-                    return connection;
-                }
+
+                _connectionList.Remove(ipAddress);
+                connection.Socket = Connect(ipAddress, port);
+                connection.MultiplicationFactor = GetMultiplicationFactor(connection.Socket);
+                _connectionList.Add(ipAddress, connection);
+                watch.Stop();
+                Debug.WriteLine($"Not connected: {watch.ElapsedMilliseconds}");
+                return connection;
             }
             else
             {
                 watch = new Stopwatch();
                 watch.Start();
-                var connection = new ControllerConnection();
-                connection.socket = Connect(ipAddress, port);
-                connection.MultiplicationFactor = GetMultiplicationFactor(connection.socket);
-                connectionList.Add(ipAddress, connection);
+                var connection = new ControllerConnection
+                {
+                    Socket = Connect(ipAddress, port)
+                };
+                connection.MultiplicationFactor = GetMultiplicationFactor(connection.Socket);
+                _connectionList.Add(ipAddress, connection);
                 watch.Stop();
                 Debug.WriteLine($"Not existing: {watch.ElapsedMilliseconds}");
                 return connection;
@@ -60,7 +62,7 @@ namespace DryveD1API.Common
 
         private static double GetMultiplicationFactor(Socket s)
         {
-            var siUnitPosition = new SIUnitPosition();
+            var siUnitPosition = new SiUnitPosition();
             siUnitPosition.Read(s);
             return siUnitPosition.GetMultiplicationFactorValue();
         }
@@ -74,24 +76,33 @@ namespace DryveD1API.Common
         private static Socket Connect(IPAddress iPAddress, int port)
         {
             Socket s = null;
-            Socket tempSocket = new Socket(iPAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint ipe = new IPEndPoint(iPAddress, port);
+            var tempSocket = new Socket(iPAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            var ipe = new IPEndPoint(iPAddress, port);
             tempSocket.Connect(ipe);
 
             if (tempSocket.Connected)
             {
                 s = tempSocket;
             }
+
             return s;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
         public static void CLoseAll()
         {
-            foreach (var controllerConnection in connectionList)
+            if (_connectionList is null)
             {
-                if (controllerConnection.Value.socket.Connected)
+                return;
+            }
+
+            foreach (var (_, connection) in _connectionList)
+            {
+                if (connection?.Socket is not null && connection.Socket.Connected)
                 {
-                    Close(controllerConnection.Value.socket);
+                    Close(connection.Socket);
                 }
             }
         }
@@ -103,10 +114,19 @@ namespace DryveD1API.Common
         }
     }
 
-    public class ControllerConnection
+    /// <summary>
+    ///
+    /// </summary>
+    public sealed class ControllerConnection
     {
-        public Socket socket { get; set; }
+        /// <summary>
+        ///
+        /// </summary>
+        public Socket Socket { get; set; }
 
+        /// <summary>
+        ///
+        /// </summary>
         public double MultiplicationFactor { get; set; }
     }
 }
