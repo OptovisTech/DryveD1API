@@ -192,7 +192,7 @@ namespace DryveD1API.Controllers
         /// <param name="allowedDeviation">The permissible deviation of the 3 actual position readings from each other.</param>
         /// <returns>The actual value of the position encoder</returns>
         [HttpGet("ActualPositionWithValidation/{hostIp}/{port:int}/{allowedDeviation:double}")]
-        public object[] GetActualPositionWithValidation(string hostIp, int port, double allowedDeviation)
+        public Tuple<bool, double> GetActualPositionWithValidation(string hostIp, int port, double allowedDeviation)
         {
             var connection = ModbusSocket.GetConnection(hostIp, port);
 
@@ -240,7 +240,7 @@ namespace DryveD1API.Controllers
                 }
             }
 
-            return new object[] { isValid, result };
+            return new Tuple<bool, double>(isValid, result);
         }
 
         /// <summary>
@@ -304,7 +304,7 @@ namespace DryveD1API.Controllers
                     }
                 }
 
-                return Ok(new object[] { isValid, result });
+                return Ok(new Tuple<bool, double>(isValid, result));
             }
             catch (Exception ex)
             {
