@@ -441,7 +441,7 @@ namespace DryveD1API.Controllers
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <param name="acceleration"></param>
         [HttpPut("Acceleration/{hostIp}/{port:int}")]
-        public void SetAcceleration(string hostIp, int port, [FromBody] uint acceleration)
+        public void SetAcceleration(string hostIp, int port, [FromBody] double acceleration)
         {
             var connection = ModbusSocket.GetConnection(hostIp, port);
             var data = BitConverter.GetBytes((uint)(acceleration * connection.MultiplicationFactor));
@@ -462,7 +462,7 @@ namespace DryveD1API.Controllers
         /// <param name="acceleration"></param>
         /// <param name="cancellationToken"></param>
         [HttpPut("AccelerationAsync/{hostIp}/{port:int}")]
-        public async Task<IActionResult> SetAccelerationAsync(string hostIp, int port, [FromBody] uint acceleration,
+        public async Task<IActionResult> SetAccelerationAsync(string hostIp, int port, [FromBody] double acceleration,
             CancellationToken cancellationToken)
         {
             try
