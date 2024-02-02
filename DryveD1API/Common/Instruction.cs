@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using DryveD1API.Controllers;
 using DryveD1API.Modules;
 
 namespace DryveD1API.Common
 {
-    public class Instruction
+    /// <summary>
+    ///
+    /// </summary>
+    public sealed class Instruction
     {
 
         /// <summary>
@@ -35,6 +36,12 @@ namespace DryveD1API.Common
         public double Deceleration { get; set; }
 
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
         public async Task<bool> MoveToTarget(string ip, int port)
         {
             //Stopwatch stopwatch = new Stopwatch();

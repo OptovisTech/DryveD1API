@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using DryveD1API.Common;
 using DryveD1API.Modules;
 using Microsoft.AspNetCore.Mvc;
@@ -22,49 +23,103 @@ namespace DryveD1API.Controllers
         /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
         /// <param name="port">Port of the Dryve D1 Controller</param>
         /// <returns>True when initialization is finished</returns>
-        [HttpGet("{hostIp}/{port}")]
+        [HttpGet("{hostIp}/{port:int}")]
         public bool Init(string hostIp, int port)
         {
             var connection = ModbusSocket.GetConnection(hostIp, port);
-            ModesOfOperation modesOfOperation = new ModesOfOperation();
-            modesOfOperation.Write(connection.socket, (ModesOfOperation.ModesEnum)1);
+            var modesOfOperation = new ModesOfOperation();
+            modesOfOperation.Write(connection.Socket, (ModesOfOperation.ModesEnum)1);
 
-            while (modesOfOperation.ReadDisplay(connection.socket) != ModesOfOperation.ModesEnum.ProfilePosition)
+            while (modesOfOperation.ReadDisplay(connection.Socket) != ModesOfOperation.ModesEnum.ProfilePosition)
             {
                 Thread.Sleep(10);
             }
 
-            StatusWord status = new StatusWord();
-            status.Read(connection.socket);
+            var status = new StatusWord();
+            status.Read(connection.Socket);
             if (!status.Bit01 && !status.Bit02 && status.Bit06)
             {
-                Reset(connection.socket);
-                ShutDown(connection.socket);
-                SwitchOn(connection.socket);
+                Reset(connection.Socket);
+                ShutDown(connection.Socket);
+                SwitchOn(connection.Socket);
             }
 
-            EnableOperation(connection.socket);
+            EnableOperation(connection.Socket);
             return true;
         }
 
-        private void Reset(Socket s)
+        /// <summary>
+        /// This method starts the initialization process
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>True when initialization is finished</returns>
+        [HttpGet("Async/{hostIp}/{port:int}")]
+        public async Task<IActionResult> InitAsync(string hostIp, int port, CancellationToken cancellationToken)
         {
-            ControlWord controlWord = new ControlWord();
-            // Byte 19: 6
-            controlWord.Bit01 = true; // 2
+            try
+            {
+                var connection = ModbusSocket.GetConnection(hostIp, port);
+                var modesOfOperation = new ModesOfOperation();
+                await modesOfOperation.WriteAsync(connection.Socket, (ModesOfOperation.ModesEnum)1, cancellationToken);
+
+                while (await modesOfOperation.ReadDisplayAsync(connection.Socket, cancellationToken) != ModesOfOperation.ModesEnum.ProfilePosition)
+                {
+                    await Task.Delay(10, cancellationToken);
+                }
+
+                var status = new StatusWord();
+                await status.ReadAsync(connection.Socket, cancellationToken);
+                if (!status.Bit01 && !status.Bit02 && status.Bit06)
+                {
+                    await ResetAsync(connection.Socket, cancellationToken);
+                    await ShutDownAsync(connection.Socket, cancellationToken);
+                    await SwitchOnAsync(connection.Socket, cancellationToken);
+                }
+
+                await EnableOperationAsync(connection.Socket, cancellationToken);
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+        private static void Reset(Socket s)
+        {
+            var controlWord = new ControlWord
+            {
+                // Byte 19: 6
+                Bit01 = true // 2
+            };
             controlWord.Write(s);
             Thread.Sleep(10);
         }
 
-        private void ShutDown(Socket s)
+        private static async Task ResetAsync(Socket s, CancellationToken cancellationToken)
         {
-            ControlWord controlWord = new ControlWord();
-            // Byte 19: 6
-            controlWord.Bit01 = true; // 2
-            controlWord.Bit02 = true; // 4
+            var controlWord = new ControlWord
+            {
+                // Byte 19: 6
+                Bit01 = true // 2
+            };
+            await controlWord.WriteAsync(s, cancellationToken);
+            await Task.Delay(10, cancellationToken);
+        }
+
+        private static void ShutDown(Socket s)
+        {
+            var controlWord = new ControlWord
+            {
+                // Byte 19: 6
+                Bit01 = true, // 2
+                Bit02 = true // 4
+            };
             controlWord.Write(s);
 
-            StatusWord statusWord = new StatusWord();
+            var statusWord = new StatusWord();
             while (!(statusWord.Bit00 && statusWord.Bit05 // 33
                                       && statusWord.Bit09)) // 2
             {
@@ -73,16 +128,37 @@ namespace DryveD1API.Controllers
             }
         }
 
-        private void SwitchOn(Socket s)
+        private static async Task ShutDownAsync(Socket s, CancellationToken cancellationToken)
         {
-            ControlWord controlWord = new ControlWord();
-            // Byte 19: 7
-            controlWord.Bit00 = true; // 1
-            controlWord.Bit01 = true; // 2
-            controlWord.Bit02 = true; // 4
+            var controlWord = new ControlWord
+            {
+                // Byte 19: 6
+                Bit01 = true, // 2
+                Bit02 = true // 4
+            };
+            await controlWord.WriteAsync(s, cancellationToken);
+
+            var statusWord = new StatusWord();
+            while (!(statusWord.Bit00 && statusWord.Bit05 // 33
+                                      && statusWord.Bit09)) // 2
+            {
+                await statusWord.ReadAsync(s, cancellationToken);
+                await Task.Delay(10, cancellationToken);
+            }
+        }
+
+        private static void SwitchOn(Socket s)
+        {
+            var controlWord = new ControlWord
+            {
+                // Byte 19: 7
+                Bit00 = true, // 1
+                Bit01 = true, // 2
+                Bit02 = true // 4
+            };
             controlWord.Write(s);
 
-            StatusWord statusWord = new StatusWord();
+            var statusWord = new StatusWord();
             while (!(statusWord.Bit00 && statusWord.Bit01 && statusWord.Bit05 // 35
                      && statusWord.Bit09)) // 2
             {
@@ -91,22 +167,65 @@ namespace DryveD1API.Controllers
             }
         }
 
-        private void EnableOperation(Socket s)
+        private static async Task SwitchOnAsync(Socket s, CancellationToken cancellationToken)
         {
-            ControlWord controlWord = new ControlWord();
-            // Byte 19: 15
-            controlWord.Bit00 = true; // 1
-            controlWord.Bit01 = true; // 2
-            controlWord.Bit02 = true; // 4
-            controlWord.Bit03 = true; // 8
+            var controlWord = new ControlWord
+            {
+                // Byte 19: 7
+                Bit00 = true, // 1
+                Bit01 = true, // 2
+                Bit02 = true // 4
+            };
+            await controlWord.WriteAsync(s, cancellationToken);
+
+            var statusWord = new StatusWord();
+            while (!(statusWord.Bit00 && statusWord.Bit01 && statusWord.Bit05 // 35
+                     && statusWord.Bit09)) // 2
+            {
+                await statusWord.ReadAsync(s, cancellationToken);
+                await Task.Delay(10, cancellationToken);
+            }
+        }
+
+        private static void EnableOperation(Socket s)
+        {
+            var controlWord = new ControlWord
+            {
+                // Byte 19: 15
+                Bit00 = true, // 1
+                Bit01 = true, // 2
+                Bit02 = true, // 4
+                Bit03 = true // 8
+            };
             controlWord.Write(s);
 
-            StatusWord statusWord = new StatusWord();
+            var statusWord = new StatusWord();
             while (!(statusWord.Bit00 && statusWord.Bit01 && statusWord.Bit02 && statusWord.Bit05 // 39
                      && statusWord.Bit09)) // 2
             {
                 statusWord.Read(s);
                 Thread.Sleep(10);
+            }
+        }
+
+        private static async Task EnableOperationAsync(Socket s, CancellationToken cancellationToken)
+        {
+            var controlWord = new ControlWord
+            {
+                // Byte 19: 15
+                Bit00 = true, // 1
+                Bit01 = true, // 2
+                Bit02 = true, // 4
+                Bit03 = true // 8
+            };
+            await controlWord.WriteAsync(s, cancellationToken);
+
+            var statusWord = new StatusWord();
+            while (!(statusWord.Bit00 && statusWord.Bit01 && statusWord.Bit02 && statusWord.Bit05 // 39
+                     && statusWord.Bit09)) // 2
+            {
+                await statusWord.ReadAsync(s, cancellationToken);
+                await Task.Delay(10, cancellationToken);
             }
         }
     }
