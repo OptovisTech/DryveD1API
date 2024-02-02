@@ -69,6 +69,23 @@
         public static readonly byte[] TargetPosition = { 96, 122 };
 
         /// <summary>
+        /// 607Bh sub1<br />
+        /// Entry of the minimum value of the target position.<br />
+        /// If these values in object 607Ah Target Position are exceeded or not reached, no movement is executed.
+        /// </summary>
+        /// <returns></returns>
+        public static readonly byte[] PositionRangeLimitMin = { 96, 123, 1 };
+
+        /// <summary>
+        /// 607Bh sub2<br />
+        /// Entry of the maximum value of the target position.<br />
+        /// Corresponds to the Available Stroke.<br />
+        /// If these values in object 607Ah Target Position are exceeded or not reached, no movement is executed.
+        /// </summary>
+        /// <returns></returns>
+        public static readonly byte[] PositionRangeLimitMax = { 96, 123, 2 };
+
+        /// <summary>
         /// 
         /// </summary>
         public static readonly byte[] HomeOffset = { 96, 124 };

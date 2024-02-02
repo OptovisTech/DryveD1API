@@ -15,6 +15,68 @@ namespace DryveD1API.Controllers
     public class ConfigurationController : ControllerBase
     {
         /// <summary>
+        /// 607Bh sub1<br />
+        /// Position range limit min.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="positionRangeLimitMin"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpPut("SetPositionRangeLimitMinAsync/{hostIp}/{port:int}")]
+        public async Task<IActionResult> SetPositionRangeLimitMinAsync(string hostIp, int port, [FromBody] double positionRangeLimitMin,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var connection = ModbusSocket.GetConnection(hostIp, port);
+                var data = BitConverter.GetBytes((int)(positionRangeLimitMin * connection.MultiplicationFactor));
+                var telegram = new Telegram
+                {
+                    Length = 23
+                };
+                telegram.Set(1, AddressConst.PositionRangeLimitMin, 4, data[0], data[1], data[2], data[3]);
+                var unused = await telegram.SendAndReceiveAsync(connection.Socket, cancellationToken);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 607Bh sub2<br />
+        /// Position range limit max.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="positionRangeLimitMax"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpPut("SetPositionRangeLimitMaxAsync/{hostIp}/{port:int}")]
+        public async Task<IActionResult> SetPositionRangeLimitMaxAsync(string hostIp, int port, [FromBody] double positionRangeLimitMax,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var connection = ModbusSocket.GetConnection(hostIp, port);
+                var data = BitConverter.GetBytes((int)(positionRangeLimitMax * connection.MultiplicationFactor));
+                var telegram = new Telegram
+                {
+                    Length = 23
+                };
+                telegram.Set(1, AddressConst.PositionRangeLimitMax, 4, data[0], data[1], data[2], data[3]);
+                var unused = await telegram.SendAndReceiveAsync(connection.Socket, cancellationToken);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+        /// <summary>
         /// 6091h sub1<br />
         /// Motor shaft revolutions.
         /// </summary>
