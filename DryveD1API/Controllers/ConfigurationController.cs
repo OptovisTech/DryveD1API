@@ -551,5 +551,34 @@ namespace DryveD1API.Controllers
                 return StatusCode(500, $"Internal server error: {ex}");
             }
         }
+
+        /// <summary>
+        /// 60C5h<br />
+        /// Entry of maximal acceleration.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="maxAcceleration"></param>
+        /// <param name="cancellationToken"></param>
+        [HttpPut("SetMaxAccelerationAsync/{hostIp}/{port:int}")]
+        public async Task<IActionResult> SetMaxAccelerationAsync(string hostIp, int port, double maxAcceleration, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var connection = ModbusSocket.GetConnection(hostIp, port);
+                var data = BitConverter.GetBytes((uint)(maxAcceleration * connection.MultiplicationFactor));
+                var telegram = new Telegram
+                {
+                    Length = 23
+                };
+                telegram.Set(1, AddressConst.MaxAcceleration, 4, data[0], data[1], data[2], data[3]);
+                var unused = await telegram.SendAndReceiveAsync(connection.Socket, cancellationToken);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
     }
 }
