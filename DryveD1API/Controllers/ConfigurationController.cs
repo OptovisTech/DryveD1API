@@ -561,7 +561,8 @@ namespace DryveD1API.Controllers
         /// <param name="maxAcceleration"></param>
         /// <param name="cancellationToken"></param>
         [HttpPut("SetMaxAccelerationAsync/{hostIp}/{port:int}")]
-        public async Task<IActionResult> SetMaxAccelerationAsync(string hostIp, int port, double maxAcceleration, CancellationToken cancellationToken)
+        public async Task<IActionResult> SetMaxAccelerationAsync(string hostIp, int port, [FromBody] double maxAcceleration,
+            CancellationToken cancellationToken)
         {
             try
             {
