@@ -359,6 +359,7 @@ namespace DryveD1API.Controllers
             }
         }
 
+
         /// <summary>
         /// 6092h sub2<br />
         /// Indication of the FeedRate.
@@ -581,5 +582,176 @@ namespace DryveD1API.Controllers
                 return StatusCode(500, $"Internal server error: {ex}");
             }
         }
+
+        /// <summary>
+        /// 6065h<br />
+        /// Following error window.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpGet("FollowingErrorWindowAsync/{hostIp}/{port:int}")]
+        public async Task<IActionResult> GetFollowingErrorWindowAsync(string hostIp, int port, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var connection = ModbusSocket.GetConnection(hostIp, port);
+                var telegram = new Telegram();
+                telegram.Set(0, AddressConst.FollowingErrorWindow, 4);
+                var response = await telegram.SendAndReceiveAsync(connection.Socket, cancellationToken);
+                var result = BitConverter.ToUInt32(new[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0) /
+                             connection.MultiplicationFactor;
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 6065h<br />
+        /// Following error window.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="followingErrorWindow"></param>
+        /// <param name="cancellationToken"></param>
+        [HttpPut("FollowingErrorWindowAsync/{hostIp}/{port:int}")]
+        public async Task<IActionResult> SetFollowingErrorWindowAsync(string hostIp, int port, [FromBody] double followingErrorWindow,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var connection = ModbusSocket.GetConnection(hostIp, port);
+                var data = BitConverter.GetBytes((uint)(followingErrorWindow * connection.MultiplicationFactor));
+                var telegram = new Telegram
+                {
+                    Length = 23
+                };
+                telegram.Set(1, AddressConst.FollowingErrorWindow, 4, data[0], data[1], data[2], data[3]);
+                var unused = await telegram.SendAndReceiveAsync(connection.Socket, cancellationToken);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 6066h<br />
+        /// Following error time out.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpGet("FollowingErrorTimeOutAsync/{hostIp}/{port:int}")]
+        public async Task<IActionResult> GetFollowingErrorTimeOutAsync(string hostIp, int port, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var connection = ModbusSocket.GetConnection(hostIp, port);
+                var telegram = new Telegram();
+                telegram.Set(0, AddressConst.FollowingErrorTimeOut, 2);
+                var response = await telegram.SendAndReceiveAsync(connection.Socket, cancellationToken);
+                var result = BitConverter.ToUInt16(new[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 6066h<br />
+        /// Following error time out.
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="followingErrorTimeOut"></param>
+        /// <param name="cancellationToken"></param>
+        [HttpPut("FollowingErrorTimeOutAsync/{hostIp}/{port:int}")]
+        public async Task<IActionResult> SetFollowingErrorTimeOutAsync(string hostIp, int port, [FromBody] ushort followingErrorTimeOut,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var connection = ModbusSocket.GetConnection(hostIp, port);
+                var data = BitConverter.GetBytes(followingErrorTimeOut);
+                var telegram = new Telegram
+                {
+                    Length = 23
+                };
+                telegram.Set(1, AddressConst.FollowingErrorTimeOut, 2, data[0], data[1], data[2], data[3]);
+                var unused = await telegram.SendAndReceiveAsync(connection.Socket, cancellationToken);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+        /*/// <summary>
+        /// 2007h <br />
+        /// S Curve Ratio.
+        /// Adjustment of the acceleration ramp type
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpGet("SCurveRatioAsync/{hostIp}/{port:int}")]
+        public async Task<IActionResult> GetSCurveRatioAsync(string hostIp, int port, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var connection = ModbusSocket.GetConnection(hostIp, port);
+                var telegram = new Telegram();
+                telegram.Set(0, AddressConst.SCurveRatio, 1);
+                var response = await telegram.SendAndReceiveAsync(connection.Socket, cancellationToken);
+                var result = BitConverter.ToUInt16(new[] { response.Byte19, response.Byte20, response.Byte21, response.Byte22 }, 0);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// 2007h <br />
+        /// S Curve Ratio.
+        /// Adjustment of the acceleration ramp type
+        /// </summary>
+        /// <param name="hostIp">Ip Address of the Dryve D1 Controller</param>
+        /// <param name="port">Port of the Dryve D1 Controller</param>
+        /// <param name="sCurveRatio"></param>
+        /// <param name="cancellationToken"></param>
+        [HttpPut("SCurveRatioAsync/{hostIp}/{port:int}")]
+        public async Task<IActionResult> SetSCurveRatioAsync(string hostIp, int port, [FromBody] byte sCurveRatio,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var connection = ModbusSocket.GetConnection(hostIp, port);
+                var data = BitConverter.GetBytes(sCurveRatio);
+                var telegram = new Telegram
+                {
+                    Length = 23
+                };
+                telegram.Set(1, AddressConst.SCurveRatio, 1, data[0], data[1], data[2], data[3]);
+                var unused = await telegram.SendAndReceiveAsync(connection.Socket, cancellationToken);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }*/
     }
 }
