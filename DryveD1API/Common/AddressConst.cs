@@ -8,6 +8,13 @@
     public class AddressConst
     {
         /// <summary>
+        /// 2007h <br />
+        /// S Curve Ratio.
+        /// Adjustment of the acceleration ramp type
+        /// </summary>
+        public static readonly byte[] SCurveRatio = { 32, 7 };
+        
+        /// <summary>
         /// 2010h<br />
         /// Activation of the input signal negation of digital inputs.
         /// </summary>
@@ -44,6 +51,18 @@
         public static readonly byte[] PositionActualValue = { 96, 100 };
 
         /// <summary>
+        /// 6065h<br />
+        /// Following error window.
+        /// </summary>
+        public static readonly byte[] FollowingErrorWindow = { 96, 101 };
+        
+        /// <summary>
+        /// 6066h<br />
+        /// Following error time out.
+        /// </summary>
+        public static readonly byte[] FollowingErrorTimeOut = { 96, 102 };
+        
+        /// <summary>
         /// 6067h<br />
         /// Indication of a symmetrical area around the target point.<br />
         /// If this area is reached, the target position can be regarded as reached.
@@ -67,6 +86,23 @@
         /// Goal position to be reached.
         /// </summary>
         public static readonly byte[] TargetPosition = { 96, 122 };
+
+        /// <summary>
+        /// 607Bh sub1<br />
+        /// Entry of the minimum value of the target position.<br />
+        /// If these values in object 607Ah Target Position are exceeded or not reached, no movement is executed.
+        /// </summary>
+        /// <returns></returns>
+        public static readonly byte[] PositionRangeLimitMin = { 96, 123, 1 };
+
+        /// <summary>
+        /// 607Bh sub2<br />
+        /// Entry of the maximum value of the target position.<br />
+        /// Corresponds to the Available Stroke.<br />
+        /// If these values in object 607Ah Target Position are exceeded or not reached, no movement is executed.
+        /// </summary>
+        /// <returns></returns>
+        public static readonly byte[] PositionRangeLimitMax = { 96, 123, 2 };
 
         /// <summary>
         /// 
@@ -171,6 +207,12 @@
         /// 
         /// </summary>
         public static readonly byte[] InterpolationTimePeriod = { 96, 194 };
+
+        /// <summary>
+        /// 60C5h<br />
+        /// Entry of maximal acceleration.
+        /// </summary>
+        public static readonly byte[] MaxAcceleration = { 96, 197 };
 
         /// <summary>
         /// 60FD<br />
