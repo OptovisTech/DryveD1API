@@ -157,7 +157,7 @@ namespace DryveD1API.Controllers
         public void SetMethod(string hostIp, int port, [FromBody] sbyte homingMethod)
         {
             var connection = ModbusSocket.GetConnection(hostIp, port);
-            var data = BitConverter.GetBytes(homingMethod);
+            var data = BitConverter.GetBytes((short)homingMethod);
             var telegram = new Telegram
             {
                 Length = 20
@@ -180,7 +180,7 @@ namespace DryveD1API.Controllers
             try
             {
                 var connection = ModbusSocket.GetConnection(hostIp, port);
-                var data = BitConverter.GetBytes(homingMethod);
+                var data = BitConverter.GetBytes((short)homingMethod);
                 var telegram = new Telegram
                 {
                     Length = 20
